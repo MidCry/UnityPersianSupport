@@ -16,14 +16,12 @@ public class PersianText : Text
 
     protected override void OnEnable()
     {
-        print("OnEnable");
         SetText();
         base.OnEnable();
     }
 
     protected override void OnValidate()
     {
-        print("OnValidate");
         SetText();
         base.OnValidate();
     }
