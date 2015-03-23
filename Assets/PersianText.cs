@@ -4,35 +4,47 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityPersianSupport;
 
+[AddComponentMenu("UI/PersianText", 11)]
 [ExecuteInEditMode]
 public class PersianText : Text
 {
-    private RectTransform _rectTransform;
+    [SerializeField]
+    [TextArea(3, 10)]
+    public string rawText;
 
+    private RectTransform _rectTransform;
 
     protected override void OnEnable()
     {
+        print("OnEnable");
         SetText();
         base.OnEnable();
     }
 
     protected override void OnValidate()
     {
+        print("OnValidate");
         SetText();
         base.OnValidate();
     }
 
-    public void SetText(string text = "خب، خب... انگاري شما هم از سقوط نجات پيدا کرديد. من همين اطراف سکونت دارم. دوس داري يه نگاهي بندازي؟") 
+    protected override void OnRectTransformDimensionsChange()
+    {
+        SetText();
+        base.OnRectTransformDimensionsChange();
+    }
+
+    public void SetText(string text = "") 
     {
         if (_rectTransform == null)
             _rectTransform = GetComponent<RectTransform>();
 
         string output = "";
 
-        if (string.IsNullOrEmpty(text))
-            output = PersianFixer.FixText(this.m_Text);
-        else
-            output = PersianFixer.FixText(text);
+        if (!string.IsNullOrEmpty(text))
+            rawText = text;
+
+        output = PersianFixer.FixText(rawText);
 
         TextGenerationSettings setting = GetGenerationSettings(new Vector2(_rectTransform.rect.width, _rectTransform.rect.height));
         cachedTextGeneratorForLayout.Populate(output, setting);
