@@ -1,0 +1,8 @@
+Library/metadata/
+*.meta
+Assets/UnityVS/
+Library/
+Temp/
+*.csproj
+*.sln
+obj/
