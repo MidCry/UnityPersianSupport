@@ -1,9 +1,9 @@
 Library/metadata/
-*.meta
 Assets/UnityVS/
 Library/
 Temp/
+obj/
 *.csproj
 *.sln
-obj/
 *.suo
+*.meta
