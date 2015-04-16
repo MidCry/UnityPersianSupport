@@ -4,95 +4,103 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityPersianSupport;
 
-[AddComponentMenu("UI/PersianText", 11)]
-[ExecuteInEditMode]
-public class PersianText : Text
+namespace UnityEngine.UI
 {
-    [SerializeField]
-    [TextArea(3, 10)]
-    public string rawText;
+    [AddComponentMenu("UI/PersianText", 11)]
+    [ExecuteInEditMode]
 
-    private RectTransform _rectTransform;
-
-    protected override void OnEnable()
+    public class PersianText : Text
     {
-        SetText();
-        base.OnEnable();
-    }
+        [SerializeField]
+        [TextArea(3, 10)]
+        public string rawText;
 
-    protected override void OnValidate()
-    {
-        SetText();
-        base.OnValidate();
-    }
+        private RectTransform _rectTransform;
 
-    protected override void OnRectTransformDimensionsChange()
-    {
-        SetText();
-        base.OnRectTransformDimensionsChange();
-    }
-
-    public void SetText(string text = "") 
-    {
-        if (_rectTransform == null)
-            _rectTransform = GetComponent<RectTransform>();
-
-        string output = "";
-
-        if (!string.IsNullOrEmpty(text))
-            rawText = text;
-
-        output = PersianFixer.FixText(rawText);
-
-        TextGenerationSettings setting = GetGenerationSettings(new Vector2(_rectTransform.rect.width, _rectTransform.rect.height));
-        cachedTextGeneratorForLayout.Populate(output, setting);
-
-        float width = _rectTransform.rect.width;
-        float usedWidth = cachedTextGeneratorForLayout.GetPreferredWidth(output, setting);
-        int lineCount = (int)(usedWidth / width) + 1;
-        UICharInfo[] info = cachedTextGeneratorForLayout.GetCharactersArray();
-
-        float jomleLength = 0;
-        int charCounter = info.Length;
-        List<string> strings = new List<string>();
-
-        for (int i = 1; i < lineCount; i++)
+        protected override void OnEnable()
         {
-            while (width * i > jomleLength)
-            {
-                jomleLength += info[--charCounter].charWidth;
-            }
+            SetText();
+            base.OnEnable();
+        }
 
-            int spaceIndex = charCounter;
-            for (; charCounter < info.Length - 1; charCounter++)
+#if UNITY_EDITOR
+
+        protected override void OnValidate()
+        {
+            SetText();
+            base.OnValidate();
+        }
+
+        protected override void OnRectTransformDimensionsChange()
+        {
+            SetText();
+            base.OnRectTransformDimensionsChange();
+        }
+
+#endif
+
+        public void SetText(string text = "")
+        {
+            if (_rectTransform == null)
+                _rectTransform = GetComponent<RectTransform>();
+
+            string output = "";
+
+            if (!string.IsNullOrEmpty(text))
+                rawText = text;
+
+            output = PersianFixer.FixText(rawText);
+
+            TextGenerationSettings setting = GetGenerationSettings(new Vector2(_rectTransform.rect.width, _rectTransform.rect.height));
+            cachedTextGeneratorForLayout.Populate(output, setting);
+
+            float width = _rectTransform.rect.width;
+            float usedWidth = cachedTextGeneratorForLayout.GetPreferredWidth(output, setting);
+            int lineCount = (int)(usedWidth / width) + 1;
+            UICharInfo[] info = cachedTextGeneratorForLayout.GetCharactersArray();
+
+            float jomleLength = 0;
+            int charCounter = info.Length;
+            List<string> strings = new List<string>();
+
+            for (int i = 1; i < lineCount; i++)
             {
-                if (output[charCounter] == ' ')
+                while (width * i > jomleLength)
                 {
-                    spaceIndex = charCounter;
-                    break;
+                    jomleLength += info[--charCounter].charWidth;
                 }
+
+                int spaceIndex = charCounter;
+                for (; charCounter < info.Length - 1; charCounter++)
+                {
+                    if (output[charCounter] == ' ')
+                    {
+                        spaceIndex = charCounter;
+                        break;
+                    }
+                }
+
+                charCounter = spaceIndex;
+
+                int endIndex = output.Length - spaceIndex;
+
+                strings.Add(output.Substring(spaceIndex, endIndex));
+                output = output.Remove(spaceIndex, endIndex);
             }
 
-            charCounter = spaceIndex;
+            strings.Add(output);
 
-            int endIndex = output.Length - spaceIndex;
+            string result = "";
 
-            strings.Add(output.Substring(spaceIndex, endIndex));
-            output = output.Remove(spaceIndex, endIndex);
+            for (int i = 0; i < strings.Count; )
+            {
+                result += strings[i];
+                i++;
+                if (i < strings.Count)
+                    result += '\u000A';
+            }
+
+            this.text = result;
         }
-
-        strings.Add(output);
-
-        string result = "";
-
-        for (int i = 0; i < strings.Count;)
-        {
-            result += strings[i];
-            i++;
-            if (i < strings.Count)
-                result += '\u000A';
-        }
-
-        this.text = result;
     }
 }
